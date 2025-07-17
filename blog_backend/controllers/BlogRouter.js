@@ -44,7 +44,7 @@ BlogRouter.post('/', async (request, response,next) => {
     const existingUser = await UserModel.findById(decodedToken.id)
     const blog = new BlogModel({
       title: request.body.title,
-      Author: request.body.author,
+      author: request.body.author,
       url: request.body.url,
       likes: Number.parseInt(request.body.likes) || 0,
       user : request.body.userId
@@ -64,6 +64,10 @@ BlogRouter.post('/', async (request, response,next) => {
 BlogRouter.put('/:id', async (request, response, next) => {
   const { title,author,likes,url } = request.body
   try {
+    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
     const existingBlog = await BlogModel.findById(request.params.id);
     if (!existingBlog) {
       return response.status(404).json("blog not found")
